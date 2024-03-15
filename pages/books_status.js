@@ -1,22 +1,15 @@
 let BookInstance = require('../models/bookinstance');
 
-
-
-get_instances = async () => {
-  let instances = BookInstance.find({}, 'book')
+exports.show_all_books_status = function (res) {
+  BookInstance.find({ 'status': { $eq: 'Available' } })
     .populate('book')
-    .exec();
-  return instances.map(function(inst) {
-    return inst.book.title + " : " + inst.status;
-  });
-};
-
-exports.show_all_books_status = async () => {
-  try {
-    let available = await get_instances().exec();
-    available = available.filter(book => book.includes('Available'));
-  }
-  catch(err) {
-    console.log('Could not get books ' + err);
-  }
+    .exec(function (err, list_bookinstances) {
+      if (err) {
+        res.send('No books found');
+      }
+      let books_status = list_bookinstances.map(function (bookinstance) {
+        return bookinstance.book.title + ' : ' + bookinstance.status;
+      });
+      res.send(books_status);
+    });
 }

@@ -1,20 +1,14 @@
 let Author = require('../models/author');
 
 get_author_list = async () => {
-  let authors_list = Author.find({}, 'name lifespan')
-    .populate('book')
-    .exec();
-  return authors_list.map(function(author) {
+  let authors_list = await Author.find().sort([['family_name', 'ascending']]).exec();
+  return authors_list.map(function (author) {
     return author.name + " : " + author.lifespan;
   });
 };
 
-exports.show_all_authors = async () => {
-  try {
-    let authors = await get_author_list().exec();
-    return authors;
-  }
-  catch(err) {
-    console.log('Could not get books ' + err);
-  }
+exports.show_all_authors = function (res) {
+  get_author_list()
+    .then((data) => res.send(data))
+    .catch((_) => res.send('No authors found'));
 }
